@@ -1,3 +1,5 @@
+#import "PreferencesPlus/PPPreferences.h"
+
 #import <SpringBoard/SBFolderView.h>
 #import <SpringBoard/SBIcon.h>
 #import <SpringBoard/SBIconController.h>

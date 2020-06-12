@@ -4,7 +4,7 @@ BOOL isDragging = NO;
 BOOL isUsingCozyBadges = NO;
 BOOL overrideAlpha = NO;
 
-NSDictionary *prefs;
+PPPreferences *prefs;
 BOOL enabled = YES;
 BOOL enabledFolders = YES;
 double delay = 2.0;
@@ -126,29 +126,16 @@ double delay = 2.0;
 %end
 
 static void SLReloadPrefs() {
-	CFPreferencesAppSynchronize((CFStringRef)kIdentifier);
+	[prefs syncPreferences];
 
-    if ([NSHomeDirectory()isEqualToString:@"/var/mobile"]) {
-        CFArrayRef keyList = CFPreferencesCopyKeyList((CFStringRef)kIdentifier, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-
-        if (keyList) {
-            prefs = (NSDictionary *)CFBridgingRelease(CFPreferencesCopyMultiple(keyList, (CFStringRef)kIdentifier, kCFPreferencesCurrentUser, kCFPreferencesAnyHost));
-
-            if (!prefs) {
-                prefs = [NSDictionary new];
-            }
-            CFRelease(keyList);
-        }
-    } else {
-        prefs = [NSDictionary dictionaryWithContentsOfFile:kSettingsPath];
-    }
-
-	enabled = [prefs objectForKey:@"enabled"] ? [[prefs valueForKey:@"enabled"] boolValue] : YES;
-	enabledFolders = [prefs objectForKey:@"enabledFolders"] ? [[prefs valueForKey:@"enabledFolders"] boolValue] : YES;
-	delay = [prefs objectForKey:@"delay"] ? [[prefs valueForKey:@"delay"] doubleValue] : 1;
+	enabled = [prefs readBoolForKey:@"enabled" withDefaultValue:YES];
+	enabledFolders = [prefs readBoolForKey:@"enabledFolders" withDefaultValue:YES];
+	delay = [prefs readDoubleForKey:@"delay" withDefaultValue:2.0];
 }
 
 %ctor {	
+	prefs = [PPPreferences initWithIdentifier:kIdentifier withNotification:@"me.conorthedev.shylabels/ReloadPrefs"];
+
 	SLReloadPrefs();
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)SLReloadPrefs, CFSTR("me.conorthedev.shylabels/ReloadPrefs"), NULL, CFNotificationSuspensionBehaviorCoalesce);
 	
